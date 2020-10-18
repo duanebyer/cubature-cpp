@@ -36,8 +36,7 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-/* USAGE: Call hcubature or pcubature with your function as described
-          in the README file. */
+/* USAGE: Call cubature with your function as described in the README file. */
 
 /* a vector integrand - evaluates the function at the given point x
    (an array of length ndim) and returns the result in fval (an array
@@ -80,41 +79,18 @@ typedef enum {
 /* adapative integration by partitioning the integration domain ("h-adaptive")
    and using the same fixed-degree quadrature in each subdomain, recursively,
    until convergence is achieved. */
-int hcubature(unsigned fdim, integrand f, void *fdata,
+int cubature(unsigned fdim, integrand f, void *fdata,
 	      unsigned dim, const double *xmin, const double *xmax, 
 	      size_t maxEval, double reqAbsError, double reqRelError, 
 	      error_norm norm,
 	      double *val, double *err);
 
-/* as hcubature, but vectorized integrand */
-int hcubature_v(unsigned fdim, integrand_v f, void *fdata,
+/* as cubature, but vectorized integrand */
+int cubature_v(unsigned fdim, integrand_v f, void *fdata,
 		unsigned dim, const double *xmin, const double *xmax, 
 		size_t maxEval, double reqAbsError, double reqRelError, 
 		error_norm norm,
 		double *val, double *err);
-
-/* adaptive integration by increasing the degree of (tensor-product
-   Clenshaw-Curtis) quadrature rules ("p-adaptive"), rather than
-   subdividing the domain ("h-adaptive").  Possibly better for
-   smooth integrands in low dimensions. */
-int pcubature_v_buf(unsigned fdim, integrand_v f, void *fdata,
-		    unsigned dim, const double *xmin, const double *xmax,
-		    size_t maxEval, 
-		    double reqAbsError, double reqRelError,
-		    error_norm norm,
-		    unsigned *m,
-		    double **buf, size_t *nbuf, size_t max_nbuf,
-		    double *val, double *err);
-int pcubature_v(unsigned fdim, integrand_v f, void *fdata,
-		unsigned dim, const double *xmin, const double *xmax, 
-		size_t maxEval, double reqAbsError, double reqRelError, 
-		error_norm norm,
-		double *val, double *err);
-int pcubature(unsigned fdim, integrand f, void *fdata,
-	      unsigned dim, const double *xmin, const double *xmax, 
-	      size_t maxEval, double reqAbsError, double reqRelError, 
-	      error_norm norm,
-	      double *val, double *err);
 
 #ifdef __cplusplus
 }  /* extern "C" */

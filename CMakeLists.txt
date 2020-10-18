@@ -12,18 +12,14 @@ project(
 # Cubature library.
 add_library(
 	cubature
-	hcubature.c
-	pcubature.c
+	cubature.c
 	cubature.h)
 add_library(Cubature::cubature ALIAS cubature)
 target_include_directories(cubature PUBLIC ".")
 
 # Test programs.
-add_executable(htest test.c)
-target_link_libraries(htest PRIVATE cubature m)
-add_executable(ptest test.c)
-target_compile_definitions(ptest PRIVATE PCUBATURE=1)
-target_link_libraries(ptest PRIVATE cubature m)
+add_executable(test test.c)
+target_link_libraries(test PRIVATE cubature m)
 
 # Installation commands.
 include(GNUInstallDirs)

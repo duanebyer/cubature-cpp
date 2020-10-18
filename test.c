@@ -1,4 +1,4 @@
-/* Test program for hcubature/pcubature.
+/* Test program for cubature.
  *
  * Copyright (c) 2005-2013 Steven G. Johnson
  *
@@ -42,12 +42,6 @@
 #include "cubature.h"
 
 #define VERBOSE 0
-
-#if defined(PCUBATURE)
-#  define cubature pcubature
-#else
-#  define cubature hcubature
-#endif
 
 int count = 0;
 unsigned integrand_fdim = 0;
