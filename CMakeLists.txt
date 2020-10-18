@@ -1,19 +1,44 @@
-cmake_minimum_required( VERSION 3.0 )
+cmake_minimum_required(VERSION 3.1...3.15)
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+	cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+endif()
 
-project( cubature )
+project(
+	Cubature
+	VERSION 0.0.1
+	DESCRIPTION "Library for the computation of multidimensional integrals using cubature."
+	LANGUAGES C)
 
-add_library( cubature SHARED 
-    hcubature.c
-    pcubature.c)
+# Cubature library.
+add_library(
+	cubature
+	hcubature.c
+	pcubature.c
+	cubature.h)
+add_library(Cubature::cubature ALIAS cubature)
+target_include_directories(cubature PUBLIC ".")
 
-add_executable( htest test.c )
-target_link_libraries( htest cubature m )
+# Test programs.
+add_executable(htest test.c)
+target_link_libraries(htest PRIVATE cubature m)
+add_executable(ptest test.c)
+target_compile_definitions(ptest PRIVATE PCUBATURE=1)
+target_link_libraries(ptest PRIVATE cubature m)
 
-add_executable( ptest test.c )
-target_link_libraries( ptest cubature m )
-target_compile_definitions( ptest PRIVATE PCUBATURE=1 )
-
+# Installation commands.
 include(GNUInstallDirs)
-install( TARGETS cubature DESTINATION ${CMAKE_INSTALL_LIBDIR} )
-install( FILES cubature.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} )
+set_target_properties(
+	cubature PROPERTIES
+	INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
+	INSTALL_RPATH_USE_LINK_PATH TRUE)
+install(
+	DIRECTORY "${Cubature_SOURCE_DIR}"
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cubature"
+	FILES_MATCHING
+		PATTERN "*.h")
+install(
+	TARGETS cubature
+	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
