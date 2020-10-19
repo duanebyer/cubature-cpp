@@ -7,26 +7,27 @@ project(
 	Cubature
 	VERSION 0.0.1
 	DESCRIPTION "Library for the computation of multidimensional integrals using cubature."
-	LANGUAGES C)
+	LANGUAGES CXX)
 
 # Cubature library.
-add_library(
-	cubature
-	cubature.c
-	cubature.h)
+add_library(cubature INTERFACE)
+target_sources(cubature INTERFACE cubature.ipp cubature.hpp)
 add_library(Cubature::cubature ALIAS cubature)
-target_include_directories(cubature PUBLIC ".")
+target_include_directories(cubature INTERFACE ".")
 
 # Test programs.
-add_executable(test test.c)
+add_executable(test test.cpp)
 target_link_libraries(test PRIVATE cubature m)
+target_compile_features(test PRIVATE cxx_std_11)
+set_target_properties(test PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_options(
+	test
+	PRIVATE
+	$<$<OR:$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic>
+	$<$<CXX_COMPILER_ID:MSVC>:/W4>)
 
 # Installation commands.
 include(GNUInstallDirs)
-set_target_properties(
-	cubature PROPERTIES
-	INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
-	INSTALL_RPATH_USE_LINK_PATH TRUE)
 install(
 	DIRECTORY "${Cubature_SOURCE_DIR}"
 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cubature"
