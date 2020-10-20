@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <type_traits>
 #include <vector>
 
 namespace cubature {
@@ -692,23 +693,12 @@ struct CubatureBase<1, R, F> {
 	}
 };
 
-// Vectorized wrapper around non-vectorized integrands.
 template<std::size_t D, typename R, typename F>
-struct FuncVectorized {
-	F f;
-	FuncVectorized(F f) : f(f) { }
-	R operator()(Point<D, R> x) const {
-		return f(x);
-	}
-	void operator()(
-			std::size_t num_points,
-			Point<D, R> const* points,
-			R* vals) const {
-		for (std::size_t idx = 0; idx < num_points; ++idx) {
-			vals[idx] = f(points[idx]);
-		}
-	}
-};
+void check_template_params() {
+	static_assert(
+		std::is_floating_point<R>::value,
+		"Template parameter R must be a flotaing point type");
+}
 
 }
 
@@ -718,10 +708,14 @@ EstErr<R> cubature::cubature(
 		Point<D, R> xmin, Point<D, R> xmax,
 		std::size_t max_eval,
 		R req_abs_err, R req_rel_err) {
-	using FV = internal::FuncVectorized<D, R, F>;
-	FV fv(f);
-	return internal::CubatureBase<D, R, FV>::cubature_v_base(
-		fv, xmin, xmax, max_eval, req_abs_err, req_rel_err, false);
+	internal::check_template_params<D, R, F>();
+	auto fp = [&](std::size_t n, Point<D, R> const* points, R* vals) {
+		for (std::size_t idx = 0; idx < n; ++idx) {
+			vals[idx] = f(points[idx]);
+		}
+	};
+	return internal::CubatureBase<D, R, decltype(fp)>::cubature_v_base(
+		fp, xmin, xmax, max_eval, req_abs_err, req_rel_err, false);
 }
 
 template<std::size_t D, typename R, typename FV>
@@ -730,8 +724,46 @@ EstErr<R> cubature::cubature_v(
 		Point<D, R> xmin, Point<D, R> xmax,
 		std::size_t max_eval,
 		R req_abs_err, R req_rel_err) {
+	internal::check_template_params<D, R, FV>();
 	return internal::CubatureBase<D, R, FV>::cubature_v_base(
 		f, xmin, xmax, max_eval, req_abs_err, req_rel_err, true);
+}
+
+template<typename R, typename F>
+EstErr<R> cubature::cubature(
+		F f,
+		R xmin, R xmax,
+		std::size_t max_eval,
+		R req_abs_err, R req_rel_err) {
+	auto fp = [&](std::size_t n, cubature::Point<1, R> const* points, R* vals) {
+		for (std::size_t idx = 0; idx < n; ++idx) {
+			vals[idx] = f(points[idx][0]);
+		}
+	};
+	internal::check_template_params<1, R, decltype(fp)>();
+	return internal::CubatureBase<1, R, decltype(fp)>::cubature_v_base(
+		fp, { xmin }, { xmax }, max_eval, req_abs_err, req_rel_err, false);
+}
+
+template<typename R, typename FV>
+EstErr<R> cubature::cubature_v(
+		FV f,
+		R xmin, R xmax,
+		std::size_t max_eval,
+		R req_abs_err, R req_rel_err) {
+	static_assert(
+		sizeof(cubature::Point<1, R>) == sizeof(R),
+		"cubature::Point must be directly convertable to type R");
+	static_assert(
+		*static_cast<R const*>(&cubature::Point<1, R>{ 0.12345 })
+			== 0.12345,
+		"cubature::Point must be directly convertable to type R");
+	auto fp = [&](std::size_t n, cubature::Point<1, R> const* points, R* vals) {
+		return f(n, static_cast<R const*>(points), vals);
+	};
+	internal::check_template_params<1, R, decltype(fp)>();
+	return internal::CubatureBase<1, R, decltype(fp)>::cubature_v_base(
+		fp, { xmin }, { xmax }, max_eval, req_abs_err, req_rel_err, true);
 }
 
 }

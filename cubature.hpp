@@ -68,6 +68,21 @@ EstErr<R> cubature_v(
 	std::size_t max_eval,
 	R req_abs_err, R req_rel_err);
 
+// One-dimensional version that doesn't require wrapping in a Point.
+template<typename R, typename F>
+EstErr<R> cubature(
+	F f,
+	R xmin, R xmax,
+	std::size_t max_eval,
+	R req_abs_err, R req_rel_err);
+
+template<typename R, typename F>
+EstErr<R> cubature_v(
+	F f,
+	R xmin, R xmax,
+	std::size_t max_eval,
+	R req_abs_err, R req_rel_err);
+
 }
 
 #include "cubature.ipp"
