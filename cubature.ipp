@@ -148,7 +148,7 @@ struct Rule {
 
 // ls0 returns the least-significant 0 bit of n (e.g. it returns 0 if the LSB is
 // 0, it returns 1 if the 2 LSBs are 01, etc.).
-std::size_t ls0(std::size_t n) {
+inline std::size_t ls0(std::size_t n) {
 #if defined(__GNUC__) && \
 	((__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || __GNUC__ >= 4)
 	// We can use a GCC built-in for versions >=3.4.
