@@ -137,9 +137,13 @@ struct Rule {
 	std::size_t const num_points;
 	Rule(std::size_t num_points) : num_points(num_points) { }
 	virtual void eval_error(
-		F f,
-		std::size_t num_regions,
-		Region<D, R>* regions) const = 0;
+			F f,
+			std::size_t num_regions,
+			Region<D, R>* regions) const {
+		static_cast<void>(f);
+		static_cast<void>(num_regions);
+		static_cast<void>(regions);
+	};
 	virtual ~Rule() = default;
 };
 
@@ -337,7 +341,7 @@ struct Rule75GenzMalik : public Rule<D, R, F> {
 		std::vector<Point<D, R> > diff = points;
 		diff.resize(num_regions);
 		for (std::size_t idx = 0; idx < num_regions; ++idx) {
-			diff[idx] = Point<D, R>{};
+			diff[idx] = Point<D, R>{{}};
 		}
 		for (std::size_t idx = 0; idx < num_regions; ++idx) {
 			R* vals_sl = &vals.data()[idx * this->num_points];
@@ -703,7 +707,7 @@ void check_template_params() {
 }
 
 template<std::size_t D, typename R, typename F>
-EstErr<R> cubature::cubature(
+EstErr<R> cubature(
 		F f,
 		Point<D, R> xmin, Point<D, R> xmax,
 		std::size_t max_eval,
@@ -719,7 +723,7 @@ EstErr<R> cubature::cubature(
 }
 
 template<std::size_t D, typename R, typename FV>
-EstErr<R> cubature::cubature_v(
+EstErr<R> cubature_v(
 		FV f,
 		Point<D, R> xmin, Point<D, R> xmax,
 		std::size_t max_eval,
@@ -730,7 +734,7 @@ EstErr<R> cubature::cubature_v(
 }
 
 template<typename R, typename F>
-EstErr<R> cubature::cubature(
+EstErr<R> cubature(
 		F f,
 		R xmin, R xmax,
 		std::size_t max_eval,
@@ -746,7 +750,7 @@ EstErr<R> cubature::cubature(
 }
 
 template<typename R, typename FV>
-EstErr<R> cubature::cubature_v(
+EstErr<R> cubature_v(
 		FV f,
 		R xmin, R xmax,
 		std::size_t max_eval,

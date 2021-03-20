@@ -238,8 +238,8 @@ int main(int argc, char **argv) {
 	switch (dim) {
 	case 0:
 		{
-			auto xmin = cubature::Point<0, double>{};
-			auto xmax = cubature::Point<0, double>{};
+			auto xmin = cubature::Point<0, double>{{}};
+			auto xmax = cubature::Point<0, double>{{}};
 			est_err = cubature::cubature(&f_test<0>, xmin, xmax, max_eval, 0., tol);
 			exact = exact_integral(xmax);
 			break;
