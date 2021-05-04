@@ -29,10 +29,8 @@ target_compile_options(
 # Installation commands.
 include(GNUInstallDirs)
 install(
-	DIRECTORY "${Cubature_SOURCE_DIR}"
-	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cubature"
-	FILES_MATCHING
-		PATTERN "*.h")
+	FILES cubature.hpp cubature.ipp
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cubature")
 install(
 	TARGETS cubature
 	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
