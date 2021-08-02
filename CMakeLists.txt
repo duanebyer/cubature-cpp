@@ -15,13 +15,13 @@ target_sources(cubature INTERFACE cubature.ipp cubature.hpp)
 add_library(Cubature::cubature ALIAS cubature)
 target_include_directories(cubature INTERFACE ".")
 
-# Test programs.
-add_executable(htest test.cpp)
-target_link_libraries(htest PRIVATE cubature m)
-target_compile_features(htest PRIVATE cxx_std_11)
-set_target_properties(htest PROPERTIES CXX_EXTENSIONS OFF)
+# Example program.
+add_executable(example example.cpp)
+target_link_libraries(example PRIVATE cubature m)
+target_compile_features(example PRIVATE cxx_std_11)
+set_target_properties(example PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_options(
-	htest
+	example
 	PRIVATE
 	$<$<OR:$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic>
 	$<$<CXX_COMPILER_ID:MSVC>:/W4>)

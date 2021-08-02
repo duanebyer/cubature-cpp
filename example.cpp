@@ -26,7 +26,7 @@
  *
  */
 
-// Usage: ./test <dim> <tol> <integrand> <maxeval>
+// Usage: ./example <dim> <tol> <integrand> <maxeval>
 //
 // where <dim> = # dimensions, <tol> = relative tolerance, <integrand> is either
 // 0/1/2 for the three test integrands (see below), and <maxeval> is the maximum
