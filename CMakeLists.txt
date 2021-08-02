@@ -9,6 +9,10 @@ project(
 	DESCRIPTION "Library for the computation of multidimensional integrals using cubature."
 	LANGUAGES CXX)
 
+set(Cubature_BUILD_EXAMPLE NO
+	CACHE BOOL
+	"should the example be built")
+
 # Cubature library.
 add_library(cubature INTERFACE)
 target_sources(cubature INTERFACE cubature.ipp cubature.hpp)
@@ -16,15 +20,17 @@ add_library(Cubature::cubature ALIAS cubature)
 target_include_directories(cubature INTERFACE ".")
 
 # Example program.
-add_executable(example example.cpp)
-target_link_libraries(example PRIVATE cubature m)
-target_compile_features(example PRIVATE cxx_std_11)
-set_target_properties(example PROPERTIES CXX_EXTENSIONS OFF)
-target_compile_options(
-	example
-	PRIVATE
-	$<$<OR:$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic>
-	$<$<CXX_COMPILER_ID:MSVC>:/W4>)
+if(${Cubature_BUILD_EXAMPLE})
+	add_executable(example example.cpp)
+	target_link_libraries(example PRIVATE cubature m)
+	target_compile_features(example PRIVATE cxx_std_11)
+	set_target_properties(example PROPERTIES CXX_EXTENSIONS OFF)
+	target_compile_options(
+		example
+		PRIVATE
+		$<$<OR:$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -pedantic>
+		$<$<CXX_COMPILER_ID:MSVC>:/W4>)
+endif()
 
 # Installation commands.
 include(GNUInstallDirs)
