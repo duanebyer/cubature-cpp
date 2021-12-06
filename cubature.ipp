@@ -307,7 +307,7 @@ struct Rule75GenzMalik : public Rule<D, R, F> {
 		R const weightE2 = 245.L / 486.L;
 		R const weightE3 = (265.L - 100.L * D) / 1458.L;
 		R const weightE4 = 25.L / 729.L;
-		R const ratio = (lambda2 * lambda2) / (lambda4 * lambda4);
+		R const ratio = 10.L / 70.L;
 		// Need an array big enough to store all of the points and vals.
 		std::vector<Point<D, R> > points(num_regions * this->num_points);
 		std::vector<R> vals(num_regions * this->num_points);
@@ -556,6 +556,12 @@ EstErr<R> rule_cubature(
 	std::make_heap(regions.begin(), regions.end());
 	total_est_err.val += region_init.est_err.val;
 	total_est_err.err += region_init.est_err.err;
+	// Store the maximum error since the last time all of the region values and
+	// errors were summed together. This is used to estimate the error of the
+	// error estimate itself. If this gets too large, the region values and
+	// errors are resummed.
+	R max_err_since_resum = total_est_err.err;
+	std::size_t count_since_resum = 1;
 
 	while (num_eval < max_eval || !max_eval) {
 		if (converged(total_est_err, req_abs_err, req_rel_err)) {
@@ -591,6 +597,10 @@ EstErr<R> rule_cubature(
 				regions.pop_back();
 				total_est_err.val -= prev_est_err.val;
 				total_est_err.err -= prev_est_err.err;
+				max_err_since_resum = std::fmax(
+					max_err_since_resum,
+					std::fabs(prev_est_err.err));
+				count_since_resum += 1;
 				next_regions.push_back(next_regions.back().cut());
 				num_eval += 2 * r.num_points;
 				if (converged(total_est_err, req_abs_err, req_rel_err)) {
@@ -604,6 +614,10 @@ EstErr<R> rule_cubature(
 				std::push_heap(regions.begin(), regions.end());
 				total_est_err.val += region.est_err.val;
 				total_est_err.err += region.est_err.err;
+				max_err_since_resum = std::fmax(
+					max_err_since_resum,
+					std::fabs(region.est_err.err));
+				count_since_resum += 1;
 			}
 			next_regions.clear();
 		} else {
@@ -614,6 +628,10 @@ EstErr<R> rule_cubature(
 			regions.pop_back();
 			total_est_err.val -= prev_est_err.val;
 			total_est_err.err -= prev_est_err.err;
+			max_err_since_resum = std::fmax(
+				max_err_since_resum,
+				std::fabs(prev_est_err.err));
+			count_since_resum += 1;
 
 			next_regions[1] = next_regions[0].cut();
 			r.eval_error(f, 2, &next_regions[0]);
@@ -625,12 +643,33 @@ EstErr<R> rule_cubature(
 			for (std::size_t idx = 0; idx < 2; ++idx) {
 				total_est_err.val += next_regions[idx].est_err.val;
 				total_est_err.err += next_regions[idx].est_err.err;
+				max_err_since_resum = std::fmax(
+					max_err_since_resum,
+					std::fabs(next_regions[idx].est_err.err));
+				count_since_resum += 1;
 			}
 			num_eval += 2 * r.num_points;
 		}
+		// Estimate the error in the total error (due to finite numerical
+		// precision). If too large, recalculate through a resum.
+		R err_of_err = count_since_resum * max_err_since_resum
+			* std::numeric_limits<R>::epsilon();
+		if (512. * err_of_err > total_est_err.err) {
+			total_est_err = { 0., 0. };
+			max_err_since_resum = 0.;
+			count_since_resum = 0;
+			for (Region<D, R> const& region : regions) {
+				total_est_err.val += region.est_err.val;
+				total_est_err.err += region.est_err.err;
+				max_err_since_resum = std::fmax(
+					max_err_since_resum,
+					std::fabs(region.est_err.err));
+				count_since_resum += 1;
+			}
+		}
 	}
 
-	// Re-sum integrals and errors.
+	// Resum integrals and errors.
 	EstErr<R> result { 0, 0 };
 	for (Region<D, R> const& region : regions) {
 		result.val += region.est_err.val;
