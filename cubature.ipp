@@ -535,6 +535,11 @@ bool converged(
 		|| est_err.err <= std::fabs(est_err.val) * req_rel_err;
 }
 
+template<typename R>
+bool invalid(EstErr<R> const& est_err) {
+	return !std::isfinite(est_err.val) || !std::isfinite(est_err.err);
+}
+
 // Adaptive integration.
 template<std::size_t D, typename R, typename F>
 EstErr<R> rule_cubature(
@@ -565,6 +570,9 @@ EstErr<R> rule_cubature(
 
 	while (num_eval < max_eval || !max_eval) {
 		if (converged(total_est_err, req_abs_err, req_rel_err)) {
+			break;
+		}
+		if (invalid(total_est_err)) {
 			break;
 		}
 		if (parallel) {
